@@ -34,6 +34,9 @@
       display: flex;
       justify-content: center;
       padding: 18px;
+      background:
+        linear-gradient(180deg, rgba(244, 248, 232, 0.7), rgba(74, 102, 61, 0.18)),
+        url("assets/tea-landscape.png") center / cover fixed;
     }
 
     button {
@@ -50,7 +53,8 @@
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 18px;
-      background: var(--paper);
+      background: rgba(246, 241, 231, 0.96);
+      backdrop-filter: blur(8px);
       box-shadow: var(--shadow);
     }
 
@@ -67,8 +71,8 @@
       overflow: hidden;
       color: #fffaf0;
       background:
-        linear-gradient(180deg, rgba(31, 47, 35, 0.28), rgba(31, 47, 35, 0.68)),
-        linear-gradient(135deg, #496d56 0%, #789061 50%, #bd8a55 100%);
+        linear-gradient(90deg, rgba(31, 47, 35, 0.94) 0%, rgba(31, 47, 35, 0.72) 54%, rgba(31, 47, 35, 0.18) 100%),
+        url("assets/tea-landscape.png") center 58% / cover;
     }
 
     .tea-rows {
@@ -93,49 +97,18 @@
       box-shadow: 0 0 34px rgba(243, 191, 103, 0.48);
     }
 
-    .worker {
+    .hero-character {
       position: absolute;
-      right: 112px;
-      bottom: 35px;
-      width: 58px;
-      height: 86px;
-      color: #fffaf0;
-    }
-
-    .worker::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 13px;
-      width: 32px;
-      height: 18px;
-      border-radius: 50%;
-      background: #e8d09d;
-      box-shadow: 0 13px 0 -5px #5a3d2d;
-    }
-
-    .worker::after {
-      content: "";
-      position: absolute;
-      top: 27px;
-      left: 18px;
-      width: 25px;
-      height: 45px;
-      border-radius: 14px 14px 8px 8px;
-      background: #9f4e38;
-      transform: skewX(-7deg);
-    }
-
-    .basket {
-      position: absolute;
-      right: 82px;
-      bottom: 50px;
-      width: 42px;
-      height: 32px;
-      border-radius: 6px 6px 16px 16px;
-      border: 3px solid rgba(255, 250, 240, 0.82);
-      border-top: 0;
-      transform: rotate(-10deg);
+      z-index: 1;
+      right: 8px;
+      bottom: -74px;
+      width: 245px;
+      height: 300px;
+      object-fit: contain;
+      object-position: center bottom;
+      filter: drop-shadow(0 14px 18px rgba(18, 36, 24, 0.26));
+      transition: opacity 0.24s ease, transform 0.24s ease;
+      pointer-events: none;
     }
 
     .kicker {
@@ -164,7 +137,7 @@
     .subtitle {
       position: relative;
       z-index: 1;
-      max-width: 560px;
+      max-width: 410px;
       margin: 0;
       font-size: 15px;
       line-height: 1.85;
@@ -248,12 +221,25 @@
     }
 
     .ledger {
+      position: relative;
       display: flex;
       flex-direction: column;
       gap: 18px;
       padding: 24px;
       border-left: 1px solid var(--line);
       background: #fffaf0;
+    }
+
+    .ledger::after {
+      content: "";
+      position: absolute;
+      right: 18px;
+      bottom: 14px;
+      width: 86px;
+      height: 64px;
+      background: url("assets/tea-basket.png") center / contain no-repeat;
+      opacity: 0.12;
+      pointer-events: none;
     }
 
     .time-pill {
@@ -416,18 +402,27 @@
         min-height: 230px;
       }
 
-      .worker {
-        right: 76px;
-      }
-
-      .basket {
-        right: 48px;
+      .hero-character {
+        right: 4px;
+        width: 220px;
+        opacity: 0.78;
       }
     }
 
     @media (max-width: 520px) {
       .hero {
         min-height: 250px;
+      }
+
+      .hero-character {
+        right: -38px;
+        bottom: -66px;
+        width: 205px;
+        opacity: 0.5;
+      }
+
+      .subtitle {
+        max-width: 72%;
       }
 
       .sun {
@@ -454,8 +449,7 @@
       <header class="hero">
         <div class="sun" aria-hidden="true"></div>
         <div class="tea-rows" aria-hidden="true"></div>
-        <div class="worker" aria-hidden="true"></div>
-        <div class="basket" aria-hidden="true"></div>
+        <img class="hero-character" id="heroCharacter" src="assets/tea-resting.png" alt="休息中的采茶女插画" />
         <span class="kicker">互动体验｜时间的账</span>
         <h1>采茶女的一天</h1>
         <p class="subtitle">
@@ -575,8 +569,21 @@
       document.getElementById("freeBar").style.width = clamp(state.freeTime / 6 * 100, 0, 100) + "%";
     }
 
-    function setScene({ label, title, text, time, choices, extra = "" }) {
+    function setCharacter(src, alt) {
+      const character = document.getElementById("heroCharacter");
+      character.style.opacity = "0";
+      character.style.transform = "translateY(8px)";
+      window.setTimeout(() => {
+        character.src = src;
+        character.alt = alt;
+        character.style.opacity = "";
+        character.style.transform = "";
+      }, 120);
+    }
+
+    function setScene({ label, title, text, time, choices, extra = "", art = null }) {
       if (time) setTime(time);
+      if (art) setCharacter(art.src, art.alt);
       document.getElementById("sceneLabel").textContent = label;
       document.getElementById("sceneTitle").textContent = title;
       document.getElementById("sceneText").innerHTML = text;
@@ -603,6 +610,7 @@
         title: "天还没有亮，宿舍里已经有人起身。",
         text: "背篓、雨衣和水壶要提前整理好。你可以马上出发，争取更长的采摘时间；也可以多睡一会儿，但白天能采的时间会被压缩。",
         time: "04:30",
+        art: { src: "assets/tea-resting.png", alt: "清晨休整的采茶女插画" },
         choices: [
           {
             text: "立刻出发",
@@ -638,6 +646,7 @@
         title: "去茶园的路，先花掉了一段时间。",
         text: sentence + "<br><br>山路、等待、整理工具，这些时间不一定直接计酬，却已经写进一天的成本里。",
         time: "05:30",
+        art: { src: "assets/tea-walker.png", alt: "背着茶篓上山的采茶女插画" },
         choices: [
           { text: "继续上山", action: weatherEvent }
         ]
@@ -684,6 +693,7 @@
         title: picked.title,
         text: picked.text,
         time: "07:00",
+        art: { src: "assets/tea-picker.png", alt: "准备进入茶垄的采茶女插画" },
         choices: [
           { text: "进入茶垄", action: startHarvest }
         ]
@@ -696,6 +706,7 @@
         title: "现在，重复的劳动开始了。",
         text: "点击中间的茶芽按钮进行采摘。每点击一次，采摘量增加，体力下降。你会发现：收入不是凭空出现的，它来自持续重复的动作。",
         time: "09:00",
+        art: { src: "assets/tea-picker.png", alt: "弯腰采摘茶芽的采茶女插画" },
         extra: `
           <div class="harvest-box">
             <button class="tea-bud-btn" type="button" id="teaBudBtn">采下一芽</button>
@@ -737,6 +748,7 @@
         title: "午饭很短，选择却不轻松。",
         text: "你已经采了一上午。现在可以短暂休息，恢复一些体力；也可以继续采摘，把时间尽量换成收入。",
         time: "12:10",
+        art: { src: "assets/tea-resting.png", alt: "午间短暂休息的采茶女插画" },
         choices: [
           {
             text: "喝水休息半小时",
@@ -772,6 +784,9 @@
         title: "离称重还有一段时间。",
         text: text + "<br><br>现在你要决定，是再坚持一段，还是提前下山去排队称重。",
         time: "15:30",
+        art: choice === "休息"
+          ? { src: "assets/tea-picker-smile.png", alt: "恢复体力后继续采茶的采茶女插画" }
+          : { src: "assets/tea-picker.png", alt: "继续劳作的采茶女插画" },
         choices: [
           {
             text: "再坚持一段",
@@ -802,6 +817,7 @@
         title: "一天的劳动，终于被放上秤。",
         text: "竹篓里的茶叶会被换算成工钱。但上山路、等待称重、疲惫的身体和被挤压的夜晚，很难一起写进这张结算单。",
         time: "17:40",
+        art: { src: "assets/tea-weighing.png", alt: "称量当日茶叶的采茶女插画" },
         choices: [
           { text: "查看今日结算", action: showResult }
         ]
@@ -822,6 +838,7 @@
         title: "今日结算单",
         text: "这一天结束了。你得到了一串数字：劳动时间、采摘量、收入、剩余时间。可是数据之外，还有重复劳动、等待、不确定和疲惫。",
         time: "21:30",
+        art: { src: "assets/tea-resting.png", alt: "一天劳作结束后休息的采茶女插画" },
         extra: `
           <div class="result-grid">
             <div class="result-item">
@@ -874,6 +891,7 @@
       document.getElementById("sceneLabel").textContent = "清晨";
       document.getElementById("sceneTitle").textContent = "天还没有亮，她已经醒了。";
       document.getElementById("sceneText").textContent = "今天，你要替她安排一天。但一天只有24小时，劳动多一点，休息就会少一点；休息多一点，收入也可能少一点。";
+      setCharacter("assets/tea-resting.png", "休息中的采茶女插画");
       setTime("04:30");
       updateStats();
     }
